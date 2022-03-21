@@ -3,6 +3,12 @@ const BlogModel = require("../models/blogModel")
 const AuthorModel = require("../models/authorModel")
 const ObjectId = require('mongoose').Types.ObjectId
 
+const isValid = function (value) {
+  if (typeof value === "undefined" || null) return false
+  if (typeof value === "string" && value.trim().length === 0) return false
+  return true
+}
+
 const loginUser = async function (req, res) {
   try {
     let userName = req.body.email;
@@ -28,10 +34,21 @@ const createBlog = async function (req, res) {
     if (Object.keys(blog).length == 0)
       return res.status(400).send({ status: false, msg: "No data to create a blog" })
 
-    let author_id = blog.authorId
-    if (!author_id)
-      return res.status(400).send({ status: false, msg: "Author Id should be present in the blog data" })
+    let blogKeys = ["title", "body", "authorId", "category"]
+    for (let i = 0; i < blogKeys.length; i++) {
+      let keyPresent = Object.keys(blog).includes(blogKeys[i])
+      if (!keyPresent) {
+        return res.status(400).send({ status: false, msg: ` ${blogKeys[i]} is required ` })
+      }
+    }
 
+    for (let i = 0; i < Object.keys(blog); i++) {
+      if (!isValid(blog[i])) {
+        return res.status(400).send({ status: false, msg: ` ${blogKeys[i]} is not valid ` })
+      }
+    }
+
+    let author_id = blog.authorId
     if (!ObjectId.isValid(author_id))
       return res.status(404).send({ status: false, msg: "AuthorId invalid" });
 
@@ -52,7 +69,7 @@ const getBlog = async function (req, res) {
     if (Object.keys(req.query).length == 0) {
       let result = await BlogModel.find({ isDeleted: false, isPublished: true })
       if (result.length != 0)
-        return res.status(200).send({status:true, data: result})
+        return res.status(200).send({ status: true, data: result })
       if (result.length == 0)
         return res.status(400).send({ status: false, msg: "No blog found" })
     }
@@ -70,7 +87,7 @@ const getBlog = async function (req, res) {
 
     let result = await BlogModel.find(filterDetails)
     if (result.length != 0)
-      return res.status(200).send({status : true, data: result});
+      return res.status(200).send({ status: true, data: result });
 
     if (result.length == 0)
       return res.status(404).send({ status: false, msg: " No blog data found" })
@@ -149,7 +166,7 @@ const deleteWithQuery = async function (req, res) {
     filterDetails.authorId = authorLoggedIn
     filterDetails.isPublished = false
     filterDetails.isDeleted = false
-    
+
     let result = await BlogModel.updateMany(filterDetails, { isDeleted: true, deletedAt: new Date() })
 
     if (result.matchedCount == 0)
