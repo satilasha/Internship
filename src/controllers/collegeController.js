@@ -53,7 +53,7 @@ const getCollege = async function (req, res) {
             return res.status(400).send({ status: false, msg: "Please select a college" })
         }
         if (Object.keys(req.query) != "collegeName") {
-            return res.status(400).send({ status: false, msg: "Pleasec provide a college Name" })
+            return res.status(400).send({ status: false, msg: "Please provide a college Name" })
         }
         let filterDetails = req.query;
         filterDetails.isDeleted = false;

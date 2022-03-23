@@ -23,10 +23,7 @@ const createIntern = async function (req, res) {
         if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
             return res.status(400).send({ status: false, msg: ` 'Please give a valid email' ` })
         }
-        let lowerCaseEmail = email.toLowerCase()
-        console.log(typeof(lowerCaseEmail))
         let duplicateEmail = await InternModel.find({ email:email })
-        console.log(duplicateEmail)
         if (duplicateEmail.length != 0) {
             return res.status(400).send({ status: false, msg: "Email is already present" })
         }

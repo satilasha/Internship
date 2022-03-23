@@ -38,6 +38,10 @@ const internSchema = new mongoose.Schema(
       type: ObjectId,
       ref: "college"
     },
+    collegeName:{
+      type: String,
+      trim: true
+    },
     isDeleted: {
       type: Boolean,
       default: false,
