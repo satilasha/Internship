@@ -13,7 +13,7 @@ const createIntern = async function (req, res) {
         if (Object.keys(req.body).length == 0) {
             return res.status(400).send({ status: false, msg: "No data to create intern" })
         }
-        const { name, mobile, email, collegeId } = req.body
+        const { name, mobile, email, collegeName, collegeId } = req.body
         if (!isValid(name)) {
             return res.status(400).send({ status: false, msg: ` Name is required ` })
         }
@@ -23,7 +23,10 @@ const createIntern = async function (req, res) {
         if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
             return res.status(400).send({ status: false, msg: ` 'Please give a valid email' ` })
         }
-        let duplicateEmail = await InternModel.find({ email: email })
+        let lowerCaseEmail = email.toLowerCase()
+        console.log(typeof(lowerCaseEmail))
+        let duplicateEmail = await InternModel.find({ email:email })
+        console.log(duplicateEmail)
         if (duplicateEmail.length != 0) {
             return res.status(400).send({ status: false, msg: "Email is already present" })
         }
@@ -35,24 +38,33 @@ const createIntern = async function (req, res) {
         }
         let countryCode = mobile.substring(3)
         let with0 = mobile.substring(1)
-        let duplicateMobile = await InternModel.find({ mobile: { $in: [mobile, countryCode, with0] } })
+        let duplicateMobile = await InternModel.find({ mobile:{ $in:[mobile,countryCode,with0 ]}})
         if (duplicateMobile.length != 0) {
             return res.status(400).send({ status: false, msg: "Mobile is already present" })
         }
-        if (!isValid(collegeId)) {
-            return res.status(400).send({ status: false, msg: ` collegeId is required ` })
+        if (!isValid(collegeName)) {
+            return res.status(400).send({ status: false, msg: ` collegeName is required ` })
         }
-        if (!ObjectId.isValid(collegeId)) {
-            return res.status(404).send({ status: false, msg: "College Id invalid" });
+        if (!(/^\S*$/.test(collegeName))) {
+            return res.status(400).send({ status: false, msg: ` 'Please give a valid college name' ` })
         }
-        let validCollege = await CollegeModel.findOne({ _id: collegeId })
+        let validCollege = await CollegeModel.findOne({ name: collegeName })
         if (!validCollege) {
             return res.status(404).send({ status: false, msg: "College data not found" });
+        }
+        if (Object.keys(req.body).includes(collegeId)) {
+            return res.status(404).send({ status: false, msg: "CollegeId not required" });
         }
         if (req.body.isDeleted == true) {
             return res.status(400).send({ status: false, msg: "Intern cannot be deleted while creating" })
         }
-        let savedData = await InternModel.create(req.body)
+        let result = {}
+        result.name = name
+        result.email = email
+        result.mobile = mobile
+        result.collegeName = collegeName
+        result.collegeId = validCollege._id
+        let savedData = await InternModel.create(result)
         return res.status(201).send({ status: true, data: savedData })
 
     } catch (error) {
@@ -61,20 +73,7 @@ const createIntern = async function (req, res) {
 }
 
 
-
 module.exports.createIntern = createIntern
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -86,7 +85,7 @@ module.exports.createIntern = createIntern
 //         if (Object.keys(req.body).length == 0) {
 //             return res.status(400).send({ status: false, msg: "No data to create intern" })
 //         }
-//         const { name, mobile, email, collegeName, collegeId } = req.body
+//         const { name, mobile, email, collegeId } = req.body
 //         if (!isValid(name)) {
 //             return res.status(400).send({ status: false, msg: ` Name is required ` })
 //         }
@@ -96,10 +95,7 @@ module.exports.createIntern = createIntern
 //         if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))) {
 //             return res.status(400).send({ status: false, msg: ` 'Please give a valid email' ` })
 //         }
-//         let lowerCaseEmail = email.toLowerCase()
-//         console.log(typeof(lowerCaseEmail))
-//         let duplicateEmail = await InternModel.find({ email:email })
-//         console.log(duplicateEmail)
+//         let duplicateEmail = await InternModel.find({ email: email })
 //         if (duplicateEmail.length != 0) {
 //             return res.status(400).send({ status: false, msg: "Email is already present" })
 //         }
@@ -111,36 +107,27 @@ module.exports.createIntern = createIntern
 //         }
 //         let countryCode = mobile.substring(3)
 //         let with0 = mobile.substring(1)
-//         let duplicateMobile = await InternModel.find({ mobile:{ $in:[mobile,countryCode,with0 ]}})
+//         let duplicateMobile = await InternModel.find({ mobile: { $in: [mobile, countryCode, with0] } })
 //         if (duplicateMobile.length != 0) {
 //             return res.status(400).send({ status: false, msg: "Mobile is already present" })
 //         }
-//         if (!isValid(collegeName)) {
-//             return res.status(400).send({ status: false, msg: ` collegeName is required ` })
+//         if (!isValid(collegeId)) {
+//             return res.status(400).send({ status: false, msg: ` collegeId is required ` })
 //         }
-//         if (!(/^\S*$/.test(collegeName))) {
-//             return res.status(400).send({ status: false, msg: ` 'Please give a valid college name' ` })
+//         if (!ObjectId.isValid(collegeId)) {
+//             return res.status(404).send({ status: false, msg: "College Id invalid" });
 //         }
-//         let validCollege = await CollegeModel.findOne({ name: collegeName })
+//         let validCollege = await CollegeModel.findOne({ _id: collegeId })
 //         if (!validCollege) {
 //             return res.status(404).send({ status: false, msg: "College data not found" });
-//         }
-//         if (Object.keys(req.body).includes(collegeId)) {
-//             return res.status(404).send({ status: false, msg: "CollegeId not required" });
 //         }
 //         if (req.body.isDeleted == true) {
 //             return res.status(400).send({ status: false, msg: "Intern cannot be deleted while creating" })
 //         }
-//         let result = {}
-//         result.name = name
-//         result.email = email
-//         result.mobile = mobile
-//         result.collegeId = validCollege._id
-//         let savedData = await InternModel.create(result)
+//         let savedData = await InternModel.create(req.body)
 //         return res.status(201).send({ status: true, data: savedData })
 
 //     } catch (error) {
 //         return res.status(500).send({ status: false, msg: error.message })
 //     }
 // }
-
