@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const AuthorController= require("../controllers/authorController")
-const BlogController= require("../controllers/blogController")
-const Mw = require("../middleware/auth")
+const CollegeController= require("../controllers/collegeController")
+const InternController= require("../controllers/internController")
 
 
 
@@ -14,14 +13,9 @@ router.get("/test-me", function (req, res) {
 
 
 
-router.post("/BASE_URL/authors", AuthorController.createAuthor)
-router.post("/login", BlogController.loginUser)
-router.post("/blogs", Mw.authentication,BlogController.createBlog)
-router.get("/blogs", Mw.authentication, BlogController.getBlogs)
-router.put("/blogs/:blogId", Mw.authentication, Mw.authorisation, BlogController.updateBlog)
-router.delete("/blogs/:blogId", Mw.authentication, Mw.authorisation,BlogController.deleteBlog)
-router.delete('/deleteBlog',Mw.authentication,BlogController.deleteWithQuery)
-
+router.post("/BASE_URL/functionup/colleges", CollegeController.createCollege)
+router.post("/functionup/interns", InternController.createIntern)
+router.get("/functionup/collegeDetails", CollegeController.getCollege)
 
 
 
